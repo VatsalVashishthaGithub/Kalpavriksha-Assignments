@@ -5,71 +5,89 @@
 
 int value_stack[256];
 char op_stack[256];
-int num_top = -1, op_top = -1;
+int numTop = -1, opTop = -1;
 
-int get_op_priority(char op) {
+int getOperatorPrecedence(char op) {
     return (op == '*' || op == '/') ? 2 : 1;
+}
+
+int applyOperator(int val1, int val2, char op, int *errorFlag) {
+    if (op == '/' && val2 == 0) {
+        *errorFlag = 2;
+        return 0;
+    }
+    switch (op) {
+        case '+': return val1 + val2;
+        case '-': return val1 - val2;
+        case '*': return val1 * val2;
+        case '/': return val1 / val2;
+        default:
+            *errorFlag = 1;
+            return 0;
+    }
 }
 
 void calculate(char* expr) {
     char* p = expr;
-    int error_flag  = 0; // 0=OK, 1=Invalid, 2=Div by Zero
-
-    while (*p && !error_flag ) {
+    int errorFlag  = 0;
+    while (*p && !errorFlag ) {
         if (isspace((char)*p)) {
-            p++; // Skipping whitespace
+            p++;
             continue;
         }
-
-        // If current letter is a number, parse and push to the value_stack stack
         if (isdigit((char)*p)) {
-            value_stack[++num_top] = strtol(p, (char**)&p, 10);
+            value_stack[++numTop] = strtol(p, (char**)&p, 10);
             continue;
         }
-
-        while (op_top > -1 && get_op_priority(op_stack[op_top]) >= get_op_priority(*p)) {
-            if (num_top < 1) { error_flag  = 1; break; }
-            int val2 = value_stack[num_top--];
-            int val1 = value_stack[num_top--];
-            char op = op_stack[op_top--];
-
-            if (op == '/' && val2 == 0) { error_flag  = 2; break; }
-            if (op == '+') value_stack[++num_top] = val1 + val2;
-            if (op == '-') value_stack[++num_top] = val1 - val2;
-            if (op == '*') value_stack[++num_top] = val1 * val2;
-            if (op == '/') value_stack[++num_top] = val1 / val2;
+        while (opTop > -1 && getOperatorPrecedence(op_stack[opTop]) >= getOperatorPrecedence(*p)) {
+            if (numTop < 1) { errorFlag  = 1; break; }
+            int val2 = value_stack[numTop--];
+            int val1 = value_stack[numTop--];
+            char op = op_stack[opTop--];
+            if (op == '/' && val2 == 0){
+                errorFlag  = 2;
+                break; 
+            }
+            if (op == '+'){
+                value_stack[++numTop] = val1 + val2;
+            }
+            if (op == '-'){
+                value_stack[++numTop] = val1 - val2;
+            }
+            if (op == '*'){
+                value_stack[++numTop] = val1 * val2;
+            }
+            if (op == '/'){
+                value_stack[++numTop] = val1 / val2;
+            }
         }
-
         if (strchr("+-*/", *p)) {
-            op_stack[++op_top] = *p++;
+            op_stack[++opTop] = *p++;
         } else {
-            error_flag  = 1; // Invalid character
+            errorFlag  = 1;
         }
     }
-
-    while (op_top > -1 && !error_flag ) {
-        if (num_top < 1) { error_flag  = 1; break; }
-        int val2 = value_stack[num_top--];
-        int val1 = value_stack[num_top--];
-        char op = op_stack[op_top--];
-        
-        if (op == '/' && val2 == 0) { error_flag  = 2; break; }
-        if (op == '+') value_stack[++num_top] = val1 + val2;
-        if (op == '-') value_stack[++num_top] = val1 - val2;
-        if (op == '*') value_stack[++num_top] = val1 * val2;
-        if (op == '/') value_stack[++num_top] = val1 / val2;
+    while (opTop > -1 && !errorFlag) {
+        if (numTop < 1) { 
+            errorFlag = 1; 
+            break; 
+        }
+        int val2 = value_stack[numTop--];
+        int val1 = value_stack[numTop--];
+        char op = op_stack[opTop--];
+        int result = applyOperator(val1, val2, op, &errorFlag);
+        if (!errorFlag) {
+            value_stack[++numTop] = result;
+        }
     }
-
-    if (error_flag  == 1 || num_top != 0 || op_top != -1) {
+    if (errorFlag  == 1 || numTop != 0 || opTop != -1) {
         printf("Error: Invalid expression.\n");
-    } else if (error_flag  == 2) {
+    } else if (errorFlag  == 2) {
         printf("Error: Division by zero.\n");
     } else {
         printf("%d\n", value_stack[0]);
     }
 }
-
-
 
 int main() {
     char userInput[1024];
@@ -78,9 +96,7 @@ int main() {
         if (len > 0 && userInput[len - 1] == '\n') {
             userInput[len - 1] = '\0';
         }
-
         calculate(userInput);
     }
-    
     return 0;
 }
