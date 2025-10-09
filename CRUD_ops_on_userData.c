@@ -13,6 +13,7 @@ void addUser();
 void displayUsers();
 void updateUser();
 void deleteUser();
+int isIdUnique(int id);
 
 int main() {
     int choice;
@@ -61,11 +62,21 @@ void addUser() {        // this will add a new user
 
     printf("Enter User ID: ");
     scanf("%d", &userToAdd.id);
+    if(!isIdUnique(userToAdd.id)){
+        printf("Error: This ID already exists. Please use a unique ID.\n");
+        fclose(fptr);
+        return;
+    }
     printf("Enter Name: ");
     scanf(" %[^\n]s", userToAdd.name);
     printf("Enter Age: ");
     scanf("%d", &userToAdd.age);
     
+    if(userToAdd.age < 0){
+        printf("Error: Age cannot be negative.\n");
+        fclose(fptr);
+        return;
+    }
     for (int i = 0; i < strlen(userToAdd.name); i++) {
         if (userToAdd.name[i] == ' ') {
             userToAdd.name[i] = '_';
@@ -189,4 +200,18 @@ void deleteUser() {         // this will delete the specific user record
     } else {
         printf("User ID not found.\n");
     }
+}
+
+int isIdUnique(int id){         // This function will check if entered ID already exists
+    struct User record;
+    FILE *fptr = fopen("users.txt", "r");
+    if(fptr == NULL) return 1;
+    while(fscanf(fptr, "%d %s %d", &record.id, record.name, &record.age) != EOF){
+        if(record.id == id){
+            fclose(fptr);
+            return 0;
+        }
+    }
+    fclose(fptr);
+    return 1;
 }
