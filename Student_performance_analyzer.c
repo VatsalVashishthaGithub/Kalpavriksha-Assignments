@@ -1,48 +1,54 @@
 #include<stdio.h>
+#define MAX_NAME_SIZE 100
+#define totalSubjects 3
 
+enum Grade{
+    Grade_A,
+    Grade_B,
+    Grade_C,
+    Grade_D,
+    Grade_F
+};
 struct Student{
     int rollNo;
-    char name[100];
-    int marks[3];
+    char name[MAX_NAME_SIZE];
+    int marks[totalSubjects];
     int totalMarks;
     float averageMarks;
-    char grade;
+    enum Grade grade;
 };
 
-// Here i am declaring the functions.
+int getTotalStudents();
+void inputStudentData(struct Student *s, int studentIndex);
 int calculateTotalMarks(int marks[]);
 float calculateAverageMarks(int totalmarks);
-char calculateGrade(float average);
-void showPerformance(char grade);
-void printRollNumbers(int n);
+enum Grade calculateGrade(float average);
+void showPerformance(enum Grade grade);
+void printRollNumbers(int totalStudent);
 
 int main(){
     struct Student s[100];
-    int n;      // n is the number of students
-    printf("Enter the number of students: ");
-    scanf("%d",&n);
-
-    for(int i=1; i<=n; i++){
-        printf("Enter details for student- %d (RollNumber , Name , Marks1 , Marks2 , Marks3) \n", i);
-        scanf("%d", &s[i].rollNo);
-        scanf("%s", s[i].name);
-        scanf("%d", &s[i].marks[0]);
-        scanf("%d", &s[i].marks[1]);
-        scanf("%d", &s[i].marks[2]);
-
-        s[i].totalMarks = calculateTotalMarks(s[i].marks);
-        s[i].averageMarks = calculateAverageMarks(s[i].totalMarks);
-        s[i].grade = calculateGrade(s[i].averageMarks);
+    int totalStudent = getTotalStudents();
+    for(int i=1; i<=totalStudent; i++){
+        inputStudentData(&s[i], i);
     }
 
-    // Performances of Students ::
     printf("Student Performances are following :: \n");
-    for(int i=1; i<=n; i++){
+    for(int i=1; i<=totalStudent; i++){
         printf("Roll No. -> %d \n", s[i].rollNo);
         printf("Name -> %s \n", s[i].name);
         printf("Total Marks Scored -> %d \n", s[i].totalMarks);
         printf("Average Marks -> %f \n", s[i].averageMarks);
-        printf("Grade scored -> %c \n", s[i].grade);
+
+        char gradeChar;
+        switch(s[i].grade){
+            case Grade_A : gradeChar = 'A'; break;
+            case Grade_B : gradeChar = 'B'; break;
+            case Grade_C : gradeChar = 'C'; break;
+            case Grade_D : gradeChar = 'D'; break;
+            case Grade_F : gradeChar = 'F'; break;
+        }
+        printf("Grade scored -> %c \n", gradeChar);
 
         if(s[i].averageMarks < 35){
             printf("Performance : Skipped (Failed)");
@@ -54,9 +60,37 @@ int main(){
     }
     
     printf("\nList of Roll Numbers :: ");
-    printRollNumbers(n);
+    printRollNumbers(totalStudent);
     printf("\n");
     return 0;
+}
+
+/*
+getTotalStudents():
+    This function will input the total number of students.
+*/
+int  getTotalStudents(){
+    int total;      
+    printf("Enter total number of students: ");
+    scanf("%d",&total);
+    return total;
+}
+
+/*
+inputStudentData():
+    This function will input the data of all students.
+*/
+void inputStudentData(struct Student *s, int studentIndex){
+    printf("Enter details for student-%d (RollNumber , Name , Marks1 , Marks2 , Marks3)\n", studentIndex);
+    scanf("%d", &s->rollNo);
+    scanf("%s", s->name);
+    scanf("%d", &s->marks[0]);
+    scanf("%d", &s->marks[1]);
+    scanf("%d", &s->marks[2]);
+
+    s->totalMarks = calculateTotalMarks(s->marks);
+    s->averageMarks = calculateAverageMarks(s->totalMarks);
+    s->grade = calculateGrade(s->averageMarks);
 }
 
 /*
@@ -75,46 +109,44 @@ int calculateTotalMarks(int marks[]){
 /*
 calculateAverageMarks:
     This function will calculate average from the total marks given.
-    For that it will take total marks as parameter.
 */
 float calculateAverageMarks(int totalMarks){
-    float totalSubjects = 3.0;
     return totalMarks / totalSubjects;
 }
 
 /*
 calculateGrade:
-    This function with the help of average marks provided, will assign the grade for each student.
+    This function will assign the grade for each student.
 */
-char calculateGrade(float average){
+enum Grade calculateGrade(float average){
     if(average >= 85 && average <= 100){
-        return 'A';
+        return Grade_A;
     }
     else if(average >= 70){
-        return 'B';
+        return Grade_B;
     }
     else if(average >= 50){
-        return 'C';
+        return Grade_C;
     }
     else if(average >= 35){
-        return 'D';
+        return Grade_D;
     }
     else{
-        return 'F';
+        return Grade_F;
     }
 }
 
 /*
 showPerformance:
-    This function with the help of grades, will show the performance of each student.
+    This function will show the performance of each student.
     This will specifically print pattern of stars '*' for each performance.
 */
-void showPerformance(char grade){
+void showPerformance(enum Grade grade){
     int star = 0;
-    if(grade == 'A') star = 5;
-    else if(grade == 'B') star = 4;
-    else if(grade == 'C') star = 3;
-    else if(grade == 'D') star = 2;
+    if(grade == Grade_A) star = 5;
+    else if(grade == Grade_B) star = 4;
+    else if(grade == Grade_C) star = 3;
+    else if(grade == Grade_D) star = 2;
 
     for(int i=1; i<= star; i++){
         printf("* ");
@@ -126,8 +158,8 @@ void showPerformance(char grade){
 printRollNumbers:
     This function will recursively print all the Roll Numbers in ascending order.
 */
-void printRollNumbers(int n){
-    if(n == 0) return;
-    printRollNumbers(n-1);
-    printf("%d", n);
+void printRollNumbers(int totalStudent){
+    if(totalStudent == 0) return;
+    printRollNumbers(totalStudent-1);
+    printf("%d", totalStudent);
 }
