@@ -4,6 +4,7 @@
 
 void printMatrix(int,int*);
 void rotateMatrix(int,int*);
+void swap(int*,int*,int*,int*);
 void applySmoothingFilter(int,int*);
 int neighbourTraverse(int,int,int,int*);
 
@@ -36,30 +37,38 @@ void rotateMatrix(int n, int *matrix){
             int *bottom = (matrix + end * n + (end-offset));
             int *right = (matrix + j * n + end);
             // performing cyclic swap of the values
-            int temp = *top;
-            *top = *left;
-            *left = *bottom;
-            *bottom = *right;
-            *right = temp;
+            swap(top,left,bottom,right);
         }
     }
+}
+
+/*
+swap:
+    This function swaps the corner values.
+*/
+void swap(int *top, int *left, int *bottom, int *right){
+    int temp = *top;
+    *top = *left;
+    *left = *bottom;
+    *bottom = *right;
+    *right = temp;
 }
 
 /*
 applySmoothingFilter:
     This function will take the average of the nearby values and replace the current value with average value.
 */
-void applySmoothingFilter(int n, int *matrix){
-    int *temp = (int *) malloc(n * n * sizeof(int));
-    // copying values of matrix to temp..
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++){
-            *(temp + i*n + j) = *(matrix + i*n + j);
+void applySmoothingFilter(int n, int * matrix){
+    int *temp = (int *) malloc(n*n * sizeof(int));
+    // firstly copying original matrix to temp matrix.
+    for(int i=0; i<n; i++){
+        for(int j=0; j<n; j++){
+            *(temp + i*n + j) = *(matrix + i*n +j);
         }
     }
-    // then traversing the previous actual values of matrix..
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++){
+    // then traversing the actual values of matrix.
+    for(int i=0; i<n; i++){
+        for(int j=0; j<n; j++){
             *(matrix + i*n + j) = neighbourTraverse(i,j,n,temp);
         }
     }
